@@ -1,4 +1,7 @@
-function CradCreate:ctor(num)
+local CardCreate=class("CardCreate", function ()
+     return display.newNode();
+end)
+function CardCreate:ctor(num)
 	--获取牌的属性
 	self.id = num;
 	
@@ -34,7 +37,7 @@ local Cardtype = {
 	sidaierdui = 14, 	--四带两对
 }
 
-function CradCreate:getsuit(self.id)  --花色
+function CardCreate:getsuit(id)  --花色
 	local bigType = nil
 	if self.id >= 1 and self.id <= 13 then
 		bigType = Cardsuittype.HEI_TAO
@@ -52,7 +55,7 @@ function CradCreate:getsuit(self.id)  --花色
 	return bigType
 end
 
-function CradCreate:getdisplay(self.id)  --牌号
+function CardCreate:getdisplay(id)  --牌号
 	local display = nil
 	if self.id >= 1 and self.id <= 52 then
 		display = CardDisplay[(self.id-1) % 13 + 1]
@@ -65,14 +68,14 @@ function CradCreate:getdisplay(self.id)  --牌号
 end
 
 
-function CradCreate:getgrade(self.id)  --权级
+function CardCreate:getgrade(id)  --权级
 	local grade = 0
 	if self.id == 53 then --小王
 		grade = 16
 	elseif self.id == 54 then 	--大王
 		grade = 17
 	else 
-		local modResult = self.id % 13
+		local modResult = (self.id-1) % 13 +1
 		if modResult == 1 then -- A
 			grade = 14
 		elseif modResult == 2 then -- 2
@@ -87,15 +90,14 @@ function CradCreate:getgrade(self.id)  --权级
 end 
 
 --获取牌的属性
-self.AllCards = {}
-for i=1,54 do
-	self.AllCards[i] = {
-		self.id = i,
-		grade=getgrade(self.id), 
-		suit=getsuit(self.id),
-		display=getdisplay(self.id),
-	}
-end
+-- AllCards = {}
+-- for i=1,54 do
+-- 	AllCards[i] ={
+-- 		grade=getgrade(i), 
+-- 		suit=getsuit(i),
+-- 		display=getdisplay(i),
+-- 	}
+-- end
 
 -- local function sortcards(cards)
 -- 	table.sort(cards, function(a,b)
@@ -114,7 +116,7 @@ end
 -- end
 
 
-function CradCreate:dump(cards) 
+function CardCreate:dump(cards) 
 	-- sortcards(cards)
 	for i,v in ipairs(cards) do
 		print(string.format("花色：%d，牌面：%s, 权重：%d", self.AllCards[v].suit, self.AllCards[v].display, self.AllCards[v].grade))
@@ -122,14 +124,14 @@ function CradCreate:dump(cards)
 end
 
 --单张
-function CradCreate:isDan(cards) 
+function CardCreate:isDan(cards) 
 	return #cards == 1
 end
 assert(isDan({33}))
-assert(isDan({23,5})==false)
+assert(sDan({23,5})==false)
 
 --对子
-function CradCreate:isDuiZi(cards)
+function CardCreate:isDuiZi(cards)
 	return #cards == 2 
 		and AllCards[cards[1]].grade == AllCards[cards[2]].grade
 end
@@ -137,14 +139,14 @@ assert(isDuiZi({30,43}))
 assert(isDuiZi({30,52}) == false)
 
 --大小王炸弹
-function CradCreate:isDuiWang(cards)
+function CardCreate:isDuiWang(cards)
 	return #cards == 2 and cards[1]+cards[2]==107
 end
 assert(isDuiWang({53,54}))
 assert(isDuiWang({53,52}) == false)
 
 --三张
-function CradCreate:isSan(cards)
+function CardCreate:isSan(cards)
 	if #cards ~= 3 then return false end
 	if AllCards[cards[1]].grade == AllCards[cards[2]].grade
 		and AllCards[cards[2]].grade == AllCards[cards[3]].grade 
@@ -158,7 +160,7 @@ assert(isSan({30,43,17})) 	--4 4 4
 assert(isSan({30,43,15}) == false) --4 4 2
 
 --三带一
-function CradCreate:isSanDaiYi(cards)
+function CardCreate:isSanDaiYi(cards)
 	if #cards ~= 4 then return false end
 	sortcards(cards)
 	if AllCards[cards[1]].grade ~= AllCards[cards[2]].grade then
@@ -180,7 +182,7 @@ assert(isSanDaiYi({30,43,17,4}) == false) --4 4 4 4
 
 
 --三带一对
-function CradCreate:isSanDaiDui(cards)
+function CardCreate:isSanDaiDui(cards)
 	if #cards ~= 5 then return false end
 	sortcards(cards)
 	if AllCards[cards[1]].grade ~= AllCards[cards[3]].grade then
@@ -203,7 +205,7 @@ assert(isSanDaiDui({30,43,17,5,31})) 	-- 4 4 4 5 5
 assert(isSanDaiDui({30,43,17,3,31}) == false) 	--4 4 4 5 3
 
 --四张（炸弹）
-function CradCreate:isSi(cards)
+function CardCreate:isSi(cards)
 	if #cards ~= 4 then return false end
 	for i=1,3 do
 		if AllCards[cards[i]].grade ~= AllCards[cards[i+1]].grade then
@@ -216,7 +218,7 @@ assert(isSi({30,43,17,4})) -- 4 4 4 4
 assert(isSi({30,43,18,4}) == false) -- 4 4 5 4
 
 --四带二
-function CradCreate:isSidaier(cards)
+function CardCreate:isSidaier(cards)
 	if #cards ~= 6 then return false end
 	local grades = getgrades(cards)
 	for k,v in pairs(grades) do
@@ -228,7 +230,7 @@ assert(isSidaier({30,43,17,4,3,5})) -- 4 4 4 4 3 5
 assert(isSidaier({30,43,17,4,3,16})) -- 4 4 4 4 3 3
 
 --四带两对
-function CradCreate:isSidaierdui(cards)
+function CardCreate:isSidaierdui(cards)
 	if #cards ~= 8 then return false end
 	local grades = getgrades(cards)
 	local t = false
@@ -245,7 +247,7 @@ assert(isSidaierdui({30,43,17,4,3,16,5,18})) -- 4 4 4 4 3 3 5 5
 assert(isSidaierdui({30,43,17,4,3,6,5,18}) == false) -- 4 4 4 4 3 6 5 5
 
 --顺子
-function CradCreate:isShunzi(cards)
+function CardCreate:isShunzi(cards)
 	if #cards < 5 then return false end
 	sortcards(cards)
 	if AllCards[cards[1]].grade > 14 then return false end --最大的牌不能超过A
@@ -261,7 +263,7 @@ assert(isShunzi({21,20,4,31}) == false)  --9 8 7 4 5
 assert(isShunzi({35,21,5,6,31}) == false)  --9 8 5 6 5 4
 
 --连对
-function CradCreate:isLiandui(cards)
+function CardCreate:isLiandui(cards)
 	if #cards < 6 then return false end
 	if #cards%2 == 1 then return false end  
 	sortcards(cards)
@@ -281,7 +283,7 @@ assert(isLiandui({35,9,21,8,20,7,6,19})) -- 9 9 8 8 7 7 6 6
 assert(isLiandui({35,9,21,8,20,7,33}) == false) -- 9 9 8 8 7 7 7
 
 --飞机(不带)
-function CradCreate:isFeiji(cards)
+function CardCreate:isFeiji(cards)
 	if #cards ~= 6 and #cards ~= 9 then return false end
 	local grades = getgrades(cards)
 	local t, t2
@@ -311,7 +313,7 @@ assert(isFeiji({35,9,22,21,8,34,7,20,33})) -- 9 9 9 8 8 8 7 7 7
 assert(isFeiji({35,9,22,20,7,33}) == false) -- 9 9 9 7 7 7
 
 --飞机(带单张)
-function CradCreate:isFeiji2(cards)
+function CardCreate:isFeiji2(cards)
 	if #cards ~= 8 and #cards ~= 12 then return false end
 	local grades = getgrades(cards)
 	local t1, t2, t3
@@ -342,7 +344,7 @@ assert(isFeiji2({35,9,22,20,7,33,3,4}) == false) -- 9 9 9 7 7 7
 
 
 --飞机(带对子)
-function CradCreate:isFeiji4(cards)
+function CardCreate:isFeiji4(cards)
 	if #cards ~= 10 and #cards ~= 15 then return false end
 	local grades = getgrades(cards)
 	local t1, t2, t3
@@ -373,7 +375,7 @@ assert(isFeiji4({35,9,22,21,8,34,3,4,16,17})) -- 9 9 9 8 8 8 3 3 4 4
 assert(isFeiji4({35,9,22,21,8,34,7,20,33,3,16,4,17,5,18})) --9 9 9 8 8 8 7 7 7 3 3 4 4 5 5
 assert(isFeiji4({35,9,22,21,8,34,3,4,16,18}) == false) -- 9 9 9 8 8 8 3 3 4 5 
 
-function CradCreate:getCardType(cards) 
+function CardCreate:getCardType(cards) 
 	local c = #cards
 	if c == 1 then 		--单张
 		return cardtype.dan
@@ -534,4 +536,4 @@ function rule.checkcards(precards, curcards)
 		end
 	end
 end
-return rule
+return CardCreate
